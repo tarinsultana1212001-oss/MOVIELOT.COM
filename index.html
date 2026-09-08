@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MovieLot — Cinematic Movie & TV Discovery</title>
+    <meta name="description" content="Discover movies and TV shows with trending lists, genre browsing, trailers, offline watchlist, and AI-powered recommendations." />
+    <meta property="og:title" content="MovieLot — Cinematic Movie & TV Discovery" />
+    <meta property="og:description" content="Discover movies and TV shows with trending lists, genre browsing, trailers, offline watchlist, and AI-powered recommendations." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        if (typeof window === 'undefined') return;
+
+        window.addEventListener('unhandledrejection', function(event) {
+          var reason = event && event.reason;
+          var msg = (reason && (reason.message || String(reason))) || '';
+          if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('websocket') !== -1) {
+            event.preventDefault();
+            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+          }
+        });
+
+        var origConsoleError = console.error;
+        console.error = function() {
+          var args = Array.prototype.slice.call(arguments);
+          var msg = args.map(function(a) {
+            return (typeof a === 'object' && a !== null) ? (a.message || a.stack || JSON.stringify(a)) : String(a);
+          }).join(' ');
+
+          if (msg.indexOf('failed to connect to websocket') !== -1 || msg.indexOf('WebSocket closed without opened') !== -1) {
+            return;
+          }
+          origConsoleError.apply(console, args);
+        };
+
+        var OriginalWebSocket = window.WebSocket;
+        if (!OriginalWebSocket) return;
+
+        function isViteHmr(protocols, url) {
+          if (protocols === 'vite-hmr' || protocols === 'vite-ping') return true;
+          if (Array.isArray(protocols) && (protocols.indexOf('vite-hmr') !== -1 || protocols.indexOf('vite-ping') !== -1)) return true;
+          var str = String(url || '');
+          if (str.indexOf('token=') !== -1 && (str.indexOf(':24678') !== -1 || str.indexOf('vite') !== -1)) return true;
+          return false;
+        }
+
+        function MockViteWebSocket(url, protocols) {
+          if (!isViteHmr(protocols, url)) {
+            return new OriginalWebSocket(url, protocols);
+          }
+
+          var listeners = { open: [], message: [], error: [], close: [] };
+          var self = {
+            url: String(url),
+            protocol: Array.isArray(protocols) ? protocols[0] : (protocols || ''),
+            readyState: 0,
+            CONNECTING: 0,
+            OPEN: 1,
+            CLOSING: 2,
+            CLOSED: 3,
+            bufferedAmount: 0,
+            extensions: '',
+            binaryType: 'blob',
+            onopen: null,
+            onmessage: null,
+            onerror: null,
+            onclose: null,
+            addEventListener: function(type, listener) {
+              if (!listeners[type]) listeners[type] = [];
+              listeners[type].push(listener);
+            },
+            removeEventListener: function(type, listener) {
+              if (!listeners[type]) return;
+              listeners[type] = listeners[type].filter(function(l) { return l !== listener; });
+            },
+            dispatchEvent: function(event) {
+              var fns = listeners[event.type] || [];
+              for (var i = 0; i < fns.length; i++) {
+                try { fns[i].call(self, event); } catch(e) {}
+              }
+              if (typeof self['on' + event.type] === 'function') {
+                try { self['on' + event.type](event); } catch(e) {}
+              }
+              return true;
+            },
+            send: function() {},
+            close: function() {
+              self.readyState = 3;
+              self.dispatchEvent({ type: 'close', wasClean: true, code: 1000, reason: '' });
+            }
+          };
+
+          setTimeout(function() {
+            self.readyState = 1;
+            self.dispatchEvent({ type: 'open' });
+          }, 0);
+
+          return self;
+        }
+
+        MockViteWebSocket.CONNECTING = 0;
+        MockViteWebSocket.OPEN = 1;
+        MockViteWebSocket.CLOSING = 2;
+        MockViteWebSocket.CLOSED = 3;
+        MockViteWebSocket.prototype = OriginalWebSocket.prototype;
+        window.WebSocket = MockViteWebSocket;
+      })();
+    </script>
+  </head>
+  <body class="bg-[#0b0d13] text-zinc-100 font-sans antialiased selection:bg-amber-500/30 selection:text-amber-200 min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

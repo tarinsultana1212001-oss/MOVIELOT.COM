@@ -1,0 +1,31 @@
+[
+  {
+    "id": "usr_admin_tarin_01",
+    "name": "Tarin Sultana (Admin)",
+    "email": "tarinsultana1212001@gmail.com",
+    "passwordHash": "5a12f6caa2e0df29b035a3294922585205b7108ffe5ffe5586855a34b5668050cee522b1b596698628841543a9358dfbf9089b428c21732429a35e153111cc01",
+    "salt": "306df978170a4266af6e88e2561732a7",
+    "role": "admin",
+    "createdAt": "2026-09-08T18:04:52.696Z",
+    "lastLoginAt": "2026-09-08T18:37:32.915Z"
+  },
+  {
+    "id": "usr_demo_viewer_02",
+    "name": "Cinema Enthusiast",
+    "email": "viewer@movielot.com",
+    "passwordHash": "58bd46767a7b3b068cdc286c95b33beb64255d5c7fa6d02b8313501986c1fd80a9ce40850c9d9e9ff6c3f56a9be76a17d765349190936e0ec26377442152fa1b",
+    "salt": "f4cb03ed6772b27c8764a24887bd683b",
+    "role": "user",
+    "createdAt": "2026-09-08T18:04:52.705Z"
+  },
+  {
+    "id": "usr_eba0fa41c14b49fd",
+    "name": "Alex Rivers",
+    "email": "alex@example.com",
+    "passwordHash": "c69a3ab1f5f7e41a9d1fded2dca43589cc76888bbb6bc4549dcabad45da24bf86a2ee326490d50ae8d36ae16ad4cde99f331c36eb0a089860d3e80446d54cad1",
+    "salt": "3e0748b259aa7a76c8f8e4e3da41c5b6",
+    "role": "user",
+    "createdAt": "2026-09-08T18:05:00.142Z",
+    "lastLoginAt": "2026-09-08T18:05:00.142Z"
+  }
+]
