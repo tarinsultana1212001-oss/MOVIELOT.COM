@@ -7,7 +7,7 @@ import { AuthService } from './server/services/authService';
 import { User } from './src/types';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: '1mb' }));
 
