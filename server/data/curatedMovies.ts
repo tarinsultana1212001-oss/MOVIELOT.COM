@@ -12,7 +12,9 @@ export const GENRES_LIST: Genre[] = [
   { id: 9648, name: 'Mystery', slug: 'mystery', description: 'Cryptic enigmas, unexpected plot twists, and puzzling who-done-its.', backdropUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=1000' },
   { id: 878, name: 'Sci-Fi', slug: 'sci-fi', description: 'Futuristic technologies, cosmic frontiers, time travel, and speculative realities.', backdropUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000' },
   { id: 53, name: 'Thriller', slug: 'thriller', description: 'Heart-stopping tension, psychological cat-and-mouse games, and shocking turns.', backdropUrl: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=1000' },
-  { id: 10749, name: 'Romance', slug: 'romance', description: 'Passionate encounters, heartfelt chemistry, and enduring relationships.', backdropUrl: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=1000' }
+  { id: 10749, name: 'Romance', slug: 'romance', description: 'Passionate encounters, heartfelt chemistry, and enduring relationships.', backdropUrl: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=1000' },
+  { id: 99, name: 'Documentary', slug: 'documentary', description: 'Deep-dive explorations into nature, cosmos, history, and real-world human phenomena.', backdropUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000' },
+  { id: 10769, name: 'Anime', slug: 'anime', description: 'Iconic Japanese animation, Shonen epics, Studio Ghibli masterpieces, and supernatural sagas.', backdropUrl: 'https://image.tmdb.org/t/p/w1280/8tAB9tK33Y3iBqR65ooxDuhw4W.jpg' }
 ];
 
 export const CURATED_MOVIES: MediaItem[] = [
@@ -822,4 +824,225 @@ export const CURATED_TV_SHOWS: MediaItem[] = [
   }
 ];
 
-export const ALL_MEDIA_CATALOG: MediaItem[] = [...CURATED_MOVIES, ...CURATED_TV_SHOWS];
+export const CURATED_ANIME: MediaItem[] = [
+  {
+    id: 1429,
+    title: 'Attack on Titan',
+    originalTitle: '進撃の巨人 (Shingeki no Kyojin)',
+    tagline: 'If we kill our enemies over there, will we finally be free?',
+    overview: 'After his hometown is destroyed and his mother is killed, young Eren Jaeger vows to cleanse the earth of the giant humanoid Titans that have brought humanity to the brink of extinction.',
+    posterPath: 'https://image.tmdb.org/t/p/w780/hTP1DtLGFamjfu8WqjnuQdP1n4i.jpg',
+    backdropPath: 'https://image.tmdb.org/t/p/w1280/8tAB9tK33Y3iBqR65ooxDuhw4W.jpg',
+    mediaType: 'anime',
+    releaseDate: '2013-04-07',
+    voteAverage: 9.0,
+    voteCount: 16200,
+    genres: [{ id: 10769, name: 'Anime' }, { id: 16, name: 'Animation' }, { id: 10759, name: 'Action & Adventure' }, { id: 10765, name: 'Sci-Fi & Fantasy' }],
+    runtime: 24,
+    seasonsCount: 4,
+    episodesCount: 87,
+    status: 'Ended',
+    creators: ['Hajime Isayama'],
+    director: 'Tetsuro Araki / Yuichiro Hayashi',
+    productionCompanies: ['Wit Studio', 'MAPPA', 'Pony Canyon'],
+    cast: [
+      { id: 301, name: 'Yuki Kaji', character: 'Eren Jaeger (voice)' },
+      { id: 302, name: 'Yui Ishikawa', character: 'Mikasa Ackerman (voice)' },
+      { id: 303, name: 'Marina Inoue', character: 'Armin Arlert (voice)' },
+      { id: 304, name: 'Hiroshi Kamiya', character: 'Levi Ackerman (voice)' }
+    ],
+    trailers: [
+      { id: 'an1', key: 'M_OauHnAFc8', name: 'Final Season Official Trailer', site: 'YouTube', type: 'Trailer', official: true }
+    ],
+    language: 'Japanese',
+    country: 'Japan'
+  },
+  {
+    id: 85937,
+    title: 'Demon Slayer: Kimetsu no Yaiba',
+    originalTitle: '鬼滅の刃',
+    tagline: 'It is the sword that cuts through sadness.',
+    overview: 'Tanjiro Kamado, a kindhearted boy whose family was slaughtered by demons, joins the Demon Slayer Corps to find a cure for his sister Nezuko, who has been turned into a demon.',
+    posterPath: 'https://image.tmdb.org/t/p/w780/xUfRZu2mi8jH6SzQEJGP6tjBuYj.jpg',
+    backdropPath: 'https://image.tmdb.org/t/p/w1280/nTvM4mhqZlHIvUkI1gVnW6XP7GG.jpg',
+    mediaType: 'anime',
+    releaseDate: '2019-04-06',
+    voteAverage: 8.7,
+    voteCount: 12400,
+    genres: [{ id: 10769, name: 'Anime' }, { id: 16, name: 'Animation' }, { id: 28, name: 'Action' }, { id: 14, name: 'Fantasy' }],
+    runtime: 24,
+    seasonsCount: 4,
+    episodesCount: 55,
+    status: 'Returning Series',
+    creators: ['Koyoharu Gotouge'],
+    director: 'Haruo Sotozaki',
+    productionCompanies: ['ufotable', 'Aniplex'],
+    cast: [
+      { id: 311, name: 'Natsuki Hanae', character: 'Tanjiro Kamado (voice)' },
+      { id: 312, name: 'Akari Kito', character: 'Nezuko Kamado (voice)' },
+      { id: 313, name: 'Hiro Shimono', character: 'Zenitsu Agatsuma (voice)' },
+      { id: 314, name: 'Yoshitsugu Matsuoka', character: 'Inosuke Hashibira (voice)' }
+    ],
+    trailers: [
+      { id: 'an2', key: 'VQGCKyvzIM4', name: 'Official Trailer', site: 'YouTube', type: 'Trailer', official: true }
+    ],
+    language: 'Japanese',
+    country: 'Japan'
+  },
+  {
+    id: 129,
+    title: 'Spirited Away',
+    originalTitle: '千と千尋の神隠し (Sen to Chihiro no Kamikakushi)',
+    tagline: 'Tunnel into an unforgettable realm of gods and spirits.',
+    overview: 'A 10-year-old girl named Chihiro wanders into a world ruled by gods, witches, and spirits, and where humans are changed into beasts. She must work in a bathhouse to find a way to free herself and her parents.',
+    posterPath: 'https://image.tmdb.org/t/p/w780/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg',
+    backdropPath: 'https://image.tmdb.org/t/p/w1280/Ab8mkHmkYADjU7wQiOkia9BzGvS.jpg',
+    mediaType: 'anime',
+    releaseDate: '2001-07-20',
+    voteAverage: 8.5,
+    voteCount: 17000,
+    genres: [{ id: 10769, name: 'Anime' }, { id: 16, name: 'Animation' }, { id: 14, name: 'Fantasy' }, { id: 12, name: 'Adventure' }],
+    runtime: 125,
+    status: 'Released',
+    director: 'Hayao Miyazaki',
+    productionCompanies: ['Studio Ghibli', 'Tokuma Shoten'],
+    cast: [
+      { id: 321, name: 'Rumi Hiiragi', character: 'Chihiro Ogino (voice)' },
+      { id: 322, name: 'Miyu Irino', character: 'Haku (voice)' },
+      { id: 323, name: 'Mari Natsuki', character: 'Yubaba / Zeniba (voice)' }
+    ],
+    trailers: [
+      { id: 'an3', key: 'ByXuk9QqQkk', name: 'Studio Ghibli Official Trailer', site: 'YouTube', type: 'Trailer', official: true }
+    ],
+    language: 'Japanese',
+    country: 'Japan'
+  },
+  {
+    id: 95479,
+    title: 'Jujutsu Kaisen',
+    originalTitle: '呪術廻戦',
+    tagline: 'Curses are fought with curses.',
+    overview: 'Yuji Itadori is a boy with tremendous physical strength, though he lives an ordinary high school life. One day, to save a classmate who has been attacked by curses, he eats the finger of Ryomen Sukuna, taking the curse into his own soul.',
+    posterPath: 'https://image.tmdb.org/t/p/w780/fHpKWdqnffkI3b7Y3wUv2U5Kj7j.jpg',
+    backdropPath: 'https://image.tmdb.org/t/p/w1280/gmECX1DvFjhDxPdUQzEzgCadcR8.jpg',
+    mediaType: 'anime',
+    releaseDate: '2020-10-03',
+    voteAverage: 8.6,
+    voteCount: 8900,
+    genres: [{ id: 10769, name: 'Anime' }, { id: 16, name: 'Animation' }, { id: 28, name: 'Action' }, { id: 14, name: 'Fantasy' }],
+    runtime: 24,
+    seasonsCount: 2,
+    episodesCount: 47,
+    status: 'Returning Series',
+    creators: ['Gege Akutami'],
+    director: 'Sunghoo Park / Shota Goshozono',
+    productionCompanies: ['MAPPA', 'TOHO animation'],
+    cast: [
+      { id: 331, name: 'Junya Enoki', character: 'Yuji Itadori (voice)' },
+      { id: 332, name: 'Yuma Uchida', character: 'Megumi Fushiguro (voice)' },
+      { id: 333, name: 'Asami Seto', character: 'Nobara Kugisaki (voice)' },
+      { id: 334, name: 'Yuichi Nakamura', character: 'Satoru Gojo (voice)' }
+    ],
+    trailers: [
+      { id: 'an4', key: 'pkKu9hLT-t8', name: 'Official Trailer', site: 'YouTube', type: 'Trailer', official: true }
+    ],
+    language: 'Japanese',
+    country: 'Japan'
+  },
+  {
+    id: 372058,
+    title: 'Your Name.',
+    originalTitle: '君の名は。 (Kimi no Na wa.)',
+    tagline: 'Treasure the experience. Dreams fade on waking.',
+    overview: 'High schoolers Mitsuha and Taki are complete strangers living separate lives in rural Itomori and bustling Tokyo. One night, they suddenly switch bodies, weaving a miraculous connection that transcends space and time.',
+    posterPath: 'https://image.tmdb.org/t/p/w780/q719qXXEzOoYaps6qFsxWa9zTC.jpg',
+    backdropPath: 'https://image.tmdb.org/t/p/w1280/7om785c4oH6xG7yA1qGvS80c5oW.jpg',
+    mediaType: 'anime',
+    releaseDate: '2016-08-26',
+    voteAverage: 8.5,
+    voteCount: 11000,
+    genres: [{ id: 10769, name: 'Anime' }, { id: 16, name: 'Animation' }, { id: 10749, name: 'Romance' }, { id: 18, name: 'Drama' }, { id: 14, name: 'Fantasy' }],
+    runtime: 107,
+    status: 'Released',
+    director: 'Makoto Shinkai',
+    productionCompanies: ['CoMix Wave Films', 'Toho'],
+    cast: [
+      { id: 341, name: 'Ryunosuke Kamiki', character: 'Taki Tachibana (voice)' },
+      { id: 342, name: 'Mone Kamishiraishi', character: 'Mitsuha Miyamizu (voice)' }
+    ],
+    trailers: [
+      { id: 'an5', key: 'xU47nhruN-Q', name: 'Official Subtitled Trailer', site: 'YouTube', type: 'Trailer', official: true }
+    ],
+    language: 'Japanese',
+    country: 'Japan'
+  },
+  {
+    id: 209867,
+    title: "Frieren: Beyond Journey's End",
+    originalTitle: '葬送のフリーレン (Sousou no Frieren)',
+    tagline: 'The story begins after the hero party defeats the Demon King.',
+    overview: 'The elf mage Frieren and her courageous fellow adventurers have defeated the Demon King. As decades pass and her mortal companions pass away, Frieren embarks on a quiet odyssey to understand human connections and say heartfelt goodbyes.',
+    posterPath: 'https://image.tmdb.org/t/p/w780/dqZENchTd7lp5zht7BdlqM7RBhD.jpg',
+    backdropPath: 'https://image.tmdb.org/t/p/w1280/9xxLWtn8G92Qi316J1HGnahM5aM.jpg',
+    mediaType: 'anime',
+    releaseDate: '2023-09-29',
+    voteAverage: 9.1,
+    voteCount: 5400,
+    genres: [{ id: 10769, name: 'Anime' }, { id: 16, name: 'Animation' }, { id: 14, name: 'Fantasy' }, { id: 18, name: 'Drama' }],
+    runtime: 24,
+    seasonsCount: 1,
+    episodesCount: 28,
+    status: 'Ended',
+    creators: ['Kanehito Yamada', 'Tsukasa Abe'],
+    director: 'Keiichiro Saito',
+    productionCompanies: ['Madhouse', 'Toho Animation'],
+    cast: [
+      { id: 351, name: 'Atsumi Tanezaki', character: 'Frieren (voice)' },
+      { id: 352, name: 'Kana Ichinose', character: 'Fern (voice)' },
+      { id: 353, name: 'Chiaki Kobayashi', character: 'Stark (voice)' }
+    ],
+    trailers: [
+      { id: 'an6', key: 'qaaI2k2w-3E', name: 'Official Trailer', site: 'YouTube', type: 'Trailer', official: true }
+    ],
+    language: 'Japanese',
+    country: 'Japan'
+  }
+];
+
+export const CURATED_DOCUMENTARIES: MediaItem[] = [
+  {
+    id: 111821,
+    title: 'Planet Earth III',
+    originalTitle: 'Planet Earth III',
+    tagline: 'Experience the astonishing wonders of our extraordinary living world.',
+    overview: 'Seven years after the groundbreaking Planet Earth II, journey to the farthest reaches of planet Earth in this landmark BBC natural history series narrated by Sir David Attenborough, witnessing never-before-seen animal behaviors.',
+    posterPath: 'https://image.tmdb.org/t/p/w780/m9Z1FfK5fLp5G0uE0t9Kx5q2U3A.jpg',
+    backdropPath: 'https://image.tmdb.org/t/p/w1280/x2I0m4c838e1GqD35gYpS7oU3wZ.jpg',
+    mediaType: 'documentary',
+    releaseDate: '2023-10-22',
+    voteAverage: 8.9,
+    voteCount: 3200,
+    genres: [{ id: 99, name: 'Documentary' }],
+    runtime: 58,
+    seasonsCount: 1,
+    episodesCount: 8,
+    status: 'Ended',
+    director: 'Michael Gunton',
+    productionCompanies: ['BBC Studios Natural History Unit', 'BBC America'],
+    cast: [
+      { id: 361, name: 'David Attenborough', character: 'Narrator / Presenter' }
+    ],
+    trailers: [
+      { id: 'doc1', key: 'yL8pW_9zHyo', name: 'Official BBC Trailer', site: 'YouTube', type: 'Trailer', official: true }
+    ],
+    language: 'English',
+    country: 'United Kingdom'
+  }
+];
+
+export const ALL_MEDIA_CATALOG: MediaItem[] = [
+  ...CURATED_MOVIES,
+  ...CURATED_TV_SHOWS,
+  ...CURATED_ANIME,
+  ...CURATED_DOCUMENTARIES
+];

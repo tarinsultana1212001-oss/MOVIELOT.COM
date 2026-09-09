@@ -45,6 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'home', label: 'Home' },
     { id: 'movies', label: 'Movies' },
     { id: 'tv', label: 'TV Shows' },
+    { id: 'anime', label: 'Anime', icon: Sparkles },
     { id: 'trending', label: 'Trending', icon: Flame },
     { id: 'popular', label: 'Popular', icon: TrendingUp },
     { id: 'genres', label: 'Genres', icon: Grid }

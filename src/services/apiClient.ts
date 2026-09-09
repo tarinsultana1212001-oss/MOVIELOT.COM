@@ -79,8 +79,32 @@ export const apiClient = {
     return fetchJson<MediaItem>(`${API_BASE}/tv/${id}`);
   },
 
+  // Anime Methods
+  getPopularAnime: async (page = 1): Promise<PaginatedResponse<MediaItem>> => {
+    return fetchJson<PaginatedResponse<MediaItem>>(`${API_BASE}/anime/popular?page=${page}`);
+  },
+
+  getTrendingAnime: async (): Promise<MediaItem[]> => {
+    const data = await fetchJson<{ results: MediaItem[] }>(`${API_BASE}/anime/trending`);
+    return data.results;
+  },
+
+  getTopRatedAnime: async (page = 1): Promise<PaginatedResponse<MediaItem>> => {
+    return fetchJson<PaginatedResponse<MediaItem>>(`${API_BASE}/anime/top-rated?page=${page}`);
+  },
+
+  // Documentaries
+  getDocumentaries: async (page = 1): Promise<PaginatedResponse<MediaItem>> => {
+    return fetchJson<PaginatedResponse<MediaItem>>(`${API_BASE}/documentaries?page=${page}`);
+  },
+
+  // Universal Media Details (Handles movies, tv, anime, docs, custom uploads)
+  getUniversalMediaDetails: async (id: number, type: string = 'all'): Promise<MediaItem> => {
+    return fetchJson<MediaItem>(`${API_BASE}/media/details/${id}?type=${type}`);
+  },
+
   // Search
-  search: async (query: string, type: 'all' | 'movie' | 'tv' = 'all', page = 1): Promise<PaginatedResponse<MediaItem>> => {
+  search: async (query: string, type: MediaType | 'all' = 'all', page = 1): Promise<PaginatedResponse<MediaItem>> => {
     const encoded = encodeURIComponent(query);
     return fetchJson<PaginatedResponse<MediaItem>>(`${API_BASE}/search?q=${encoded}&type=${type}&page=${page}`);
   },
@@ -92,7 +116,7 @@ export const apiClient = {
   },
 
   // By Genre
-  getByGenre: async (genreId: number, type: 'all' | 'movie' | 'tv' = 'all', page = 1): Promise<PaginatedResponse<MediaItem>> => {
+  getByGenre: async (genreId: number, type: MediaType | 'all' = 'all', page = 1): Promise<PaginatedResponse<MediaItem>> => {
     return fetchJson<PaginatedResponse<MediaItem>>(`${API_BASE}/genres/${genreId}?type=${type}&page=${page}`);
   },
 
@@ -238,6 +262,18 @@ export const apiClient = {
   addAdminMovie: async (token: string, payload: CustomMediaPayload): Promise<{ success: boolean; item: MediaItem; message: string }> => {
     return fetchJson<{ success: boolean; item: MediaItem; message: string }>(`${API_BASE}/admin/movies`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+  },
+
+  // Admin: Update custom movie in catalog
+  updateAdminMovie: async (token: string, id: number, payload: Partial<CustomMediaPayload>): Promise<{ success: boolean; item: MediaItem; message: string }> => {
+    return fetchJson<{ success: boolean; item: MediaItem; message: string }>(`${API_BASE}/admin/movies/${id}`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`

@@ -1,6 +1,6 @@
 {
   "name": "MovieLot",
-  "description": "Discover movies and TV shows with trending lists, genre browsing, trailers, offline watchlist, and AI-powered recommendations.",
+  "description": "Discover movies, TV shows, anime, and documentaries with trending lists, official trailers, AI-powered recommendations, and administrative catalog management.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

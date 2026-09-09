@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
-import { getMovieProvider, addCustomMedia, deleteCustomMedia, getCustomMediaList } from './server/services/movieService';
+import { getMovieProvider, addCustomMedia, updateCustomMedia, deleteCustomMedia, getCustomMediaList } from './server/services/movieService';
 import { chatWithAssistant, generateRecommendations } from './server/services/geminiService';
 import { AuthService } from './server/services/authService';
 import { User } from './src/types';
@@ -161,6 +161,77 @@ app.get('/api/tv/:id', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('TV details error:', error);
     res.status(500).json({ error: 'Failed to retrieve TV show details.' });
+  }
+});
+
+// 9b. Anime Endpoints (Popular, Trending, Top-Rated)
+app.get('/api/anime/popular', async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const provider = getMovieProvider();
+    const data = await provider.getPopular('anime', page);
+    res.json(data);
+  } catch (error) {
+    console.error('Popular Anime fetch error:', error);
+    res.status(500).json({ error: 'Failed to retrieve anime titles.' });
+  }
+});
+
+app.get('/api/anime/trending', async (_req: Request, res: Response) => {
+  try {
+    const provider = getMovieProvider();
+    const results = await provider.getTrending('anime', 'week');
+    res.json({ results });
+  } catch (error) {
+    console.error('Trending Anime fetch error:', error);
+    res.status(500).json({ error: 'Failed to retrieve trending anime.' });
+  }
+});
+
+app.get('/api/anime/top-rated', async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const provider = getMovieProvider();
+    const data = await provider.getTopRated('anime', page);
+    res.json(data);
+  } catch (error) {
+    console.error('Top Rated Anime fetch error:', error);
+    res.status(500).json({ error: 'Failed to retrieve top rated anime.' });
+  }
+});
+
+// 9c. Documentaries
+app.get('/api/documentaries', async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const provider = getMovieProvider();
+    const data = await provider.getPopular('documentary', page);
+    res.json(data);
+  } catch (error) {
+    console.error('Documentaries fetch error:', error);
+    res.status(500).json({ error: 'Failed to retrieve documentaries.' });
+  }
+});
+
+// 9d. Universal Media Details
+app.get('/api/media/details/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      res.status(400).json({ error: 'Invalid media ID.' });
+      return;
+    }
+    const type = (req.query.type as string) || 'all';
+    const provider = getMovieProvider();
+    const item = await provider.getDetails(id, type);
+    if (!item) {
+      res.status(404).json({ error: 'Media title not found.' });
+      return;
+    }
+    res.json(item);
+  } catch (error) {
+    console.error('Universal details error:', error);
+    res.status(500).json({ error: 'Failed to retrieve media details.' });
   }
 });
 
@@ -473,6 +544,23 @@ app.post('/api/admin/movies', requireAdmin, (req: Request, res: Response) => {
     res.status(201).json({ success: true, item, message: `"${item.title}" successfully added to catalog.` });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to add media item.';
+    res.status(500).json({ error: message });
+  }
+});
+
+// 27b. Admin: Update custom title in catalog (PUT /api/admin/movies/:id)
+app.put('/api/admin/movies/:id', requireAdmin, (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const payload = req.body;
+    const updated = updateCustomMedia(id, payload);
+    if (!updated) {
+      res.status(404).json({ error: 'Custom title not found to update.' });
+      return;
+    }
+    res.json({ success: true, item: updated, message: `"${updated.title}" updated successfully.` });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to update media item.';
     res.status(500).json({ error: message });
   }
 });

@@ -1,5 +1,5 @@
 import { CastMember, CrewMember, Genre, MediaItem, MediaType, VideoTrailer, CustomMediaPayload } from '../../src/types';
-import { ALL_MEDIA_CATALOG, CURATED_MOVIES, CURATED_TV_SHOWS, GENRES_LIST } from '../data/curatedMovies';
+import { ALL_MEDIA_CATALOG, CURATED_MOVIES, CURATED_TV_SHOWS, CURATED_ANIME, CURATED_DOCUMENTARIES, GENRES_LIST } from '../data/curatedMovies';
 
 export interface PaginatedResult<T> {
   results: T[];
@@ -10,17 +10,17 @@ export interface PaginatedResult<T> {
 
 export interface MovieProvider {
   name: string;
-  getTrending(mediaType?: 'all' | 'movie' | 'tv', timeWindow?: 'day' | 'week'): Promise<MediaItem[]>;
-  getPopular(mediaType: 'movie' | 'tv', page?: number): Promise<PaginatedResult<MediaItem>>;
+  getTrending(mediaType?: 'all' | 'movie' | 'tv' | 'anime' | 'documentary' | 'animation', timeWindow?: 'day' | 'week'): Promise<MediaItem[]>;
+  getPopular(mediaType: 'movie' | 'tv' | 'anime' | 'documentary' | 'animation', page?: number): Promise<PaginatedResult<MediaItem>>;
   getUpcoming(page?: number): Promise<PaginatedResult<MediaItem>>;
-  getTopRated(mediaType: 'movie' | 'tv', page?: number): Promise<PaginatedResult<MediaItem>>;
-  getDetails(id: number, mediaType: 'movie' | 'tv'): Promise<MediaItem | null>;
-  search(query: string, mediaType?: 'all' | 'movie' | 'tv', page?: number): Promise<PaginatedResult<MediaItem>>;
+  getTopRated(mediaType: 'movie' | 'tv' | 'anime' | 'documentary' | 'animation', page?: number): Promise<PaginatedResult<MediaItem>>;
+  getDetails(id: number, mediaType?: 'movie' | 'tv' | 'anime' | 'documentary' | 'animation' | string): Promise<MediaItem | null>;
+  search(query: string, mediaType?: 'all' | 'movie' | 'tv' | 'anime' | 'documentary' | 'animation', page?: number): Promise<PaginatedResult<MediaItem>>;
   getGenres(): Promise<Genre[]>;
-  getByGenre(genreId: number, mediaType?: 'all' | 'movie' | 'tv', page?: number): Promise<PaginatedResult<MediaItem>>;
-  getRecommendations(id: number, mediaType: 'movie' | 'tv'): Promise<MediaItem[]>;
-  getCredits(id: number, mediaType: 'movie' | 'tv'): Promise<{ cast: CastMember[]; crew: CrewMember[] }>;
-  getTrailers(id: number, mediaType: 'movie' | 'tv'): Promise<VideoTrailer[]>;
+  getByGenre(genreId: number, mediaType?: 'all' | 'movie' | 'tv' | 'anime' | 'documentary' | 'animation', page?: number): Promise<PaginatedResult<MediaItem>>;
+  getRecommendations(id: number, mediaType?: 'movie' | 'tv' | 'anime' | 'documentary' | 'animation' | string): Promise<MediaItem[]>;
+  getCredits(id: number, mediaType?: 'movie' | 'tv' | 'anime' | 'documentary' | 'animation' | string): Promise<{ cast: CastMember[]; crew: CrewMember[] }>;
+  getTrailers(id: number, mediaType?: 'movie' | 'tv' | 'anime' | 'documentary' | 'animation' | string): Promise<VideoTrailer[]>;
 }
 
 // In-Memory Cache with TTL
@@ -65,40 +65,98 @@ export function getCustomMediaList(): MediaItem[] {
 
 export function addCustomMedia(payload: CustomMediaPayload): MediaItem {
   const newId = 900000 + Math.floor(Math.random() * 90000);
+
+  const castList: CastMember[] = (payload.castNames && payload.castNames.length > 0)
+    ? payload.castNames.map((name, i) => ({ id: 500 + i, name: name.trim(), character: 'Star' }))
+    : [
+        { id: 101, name: 'Lead Cast', character: 'Main Role' },
+        { id: 102, name: 'Supporting Cast', character: 'Featured Role' }
+      ];
+
+  const crewList: CrewMember[] = payload.director 
+    ? [{ id: 201, name: payload.director, job: 'Director', department: 'Directing' }]
+    : [{ id: 201, name: 'Lead Director', job: 'Director', department: 'Directing' }];
+
+  const normalizedGenres = (payload.genres && payload.genres.length > 0 
+    ? payload.genres 
+    : (payload.mediaType === 'anime' ? ['Anime', 'Animation', 'Action'] : ['Action', 'Drama'])
+  ).map((name, index) => ({ id: 400 + index, name }));
+
+  const defaultTagline = payload.mediaType === 'anime' 
+    ? 'Masterpiece Japanese Animation'
+    : (payload.mediaType === 'documentary' ? 'Eye-opening True World Exploration' : 'MovieLot Premier Selection');
+
+  const defaultRuntime = payload.mediaType === 'movie' 
+    ? (payload.runtime || 120) 
+    : (payload.mediaType === 'anime' ? (payload.runtime || 24) : (payload.runtime || 50));
+
   const mediaItem: MediaItem = {
     id: newId,
     title: payload.title,
-    originalTitle: payload.title,
-    tagline: 'MovieLot Exclusive Premiere',
+    originalTitle: payload.originalTitle || payload.title,
+    tagline: payload.tagline || defaultTagline,
     overview: payload.overview,
     posterPath: payload.posterPath,
     backdropPath: payload.backdropPath || payload.posterPath,
-    mediaType: payload.mediaType,
+    mediaType: payload.mediaType || 'movie',
     releaseDate: payload.releaseDate || new Date().toISOString().split('T')[0],
-    voteAverage: Number(payload.voteAverage) || 8.2,
-    voteCount: 120,
-    genres: (payload.genres || ['Action']).map((name, index) => ({ id: 400 + index, name })),
-    runtime: payload.mediaType === 'movie' ? 124 : 50,
-    status: 'Released',
-    director: 'MovieLot Studio',
-    productionCompanies: ['MovieLot Originals', 'Global Cinema'],
-    cast: [
-      { id: 101, name: 'Lead Performer', character: 'Main Protagonist' },
-      { id: 102, name: 'Supporting Star', character: 'Deuteragonist' }
-    ],
-    crew: [
-      { id: 201, name: 'MovieLot Curator', job: 'Director', department: 'Directing' }
-    ],
+    voteAverage: Number(payload.voteAverage) || 8.5,
+    voteCount: Math.floor(Math.random() * 400) + 120,
+    genres: normalizedGenres,
+    runtime: defaultRuntime,
+    seasonsCount: payload.seasonsCount || (payload.mediaType === 'tv' || payload.mediaType === 'anime' ? 1 : undefined),
+    episodesCount: payload.episodesCount || (payload.mediaType === 'tv' || payload.mediaType === 'anime' ? 12 : undefined),
+    status: payload.status || 'Released',
+    director: payload.director || (payload.mediaType === 'anime' ? 'Studio Chief' : 'Lead Director'),
+    creators: payload.creators || (payload.director ? [payload.director] : undefined),
+    productionCompanies: payload.studio 
+      ? [payload.studio] 
+      : (payload.mediaType === 'anime' ? ['Ufotable / MAPPA'] : ['MovieLot Studios']),
+    cast: castList,
+    crew: crewList,
     trailers: payload.trailerKey ? [
-      { id: `tr_${newId}`, key: payload.trailerKey, name: 'Official Trailer', site: 'YouTube', type: 'Trailer', official: true }
+      { id: `tr_${newId}`, key: payload.trailerKey.trim(), name: 'Official Trailer', site: 'YouTube', type: 'Trailer', official: true }
     ] : [],
-    language: 'English',
-    country: 'United States'
+    language: payload.language || (payload.mediaType === 'anime' ? 'Japanese' : 'English'),
+    country: payload.country || (payload.mediaType === 'anime' ? 'Japan' : 'United States')
   };
 
   customMediaCatalog.unshift(mediaItem);
   movieCache.clear();
   return mediaItem;
+}
+
+export function updateCustomMedia(id: number, payload: Partial<CustomMediaPayload>): MediaItem | null {
+  const index = customMediaCatalog.findIndex(m => m.id === id);
+  if (index === -1) return null;
+  const existing = customMediaCatalog[index];
+
+  const updated: MediaItem = {
+    ...existing,
+    title: payload.title ?? existing.title,
+    originalTitle: payload.originalTitle ?? existing.originalTitle,
+    tagline: payload.tagline ?? existing.tagline,
+    overview: payload.overview ?? existing.overview,
+    posterPath: payload.posterPath ?? existing.posterPath,
+    backdropPath: payload.backdropPath ?? existing.backdropPath,
+    mediaType: (payload.mediaType as MediaType) ?? existing.mediaType,
+    releaseDate: payload.releaseDate ?? existing.releaseDate,
+    voteAverage: payload.voteAverage !== undefined ? Number(payload.voteAverage) : existing.voteAverage,
+    genres: payload.genres ? payload.genres.map((name, i) => ({ id: 400 + i, name })) : existing.genres,
+    director: payload.director ?? existing.director,
+    runtime: payload.runtime ?? existing.runtime,
+    seasonsCount: payload.seasonsCount ?? existing.seasonsCount,
+    episodesCount: payload.episodesCount ?? existing.episodesCount,
+    language: payload.language ?? existing.language,
+    country: payload.country ?? existing.country,
+    trailers: payload.trailerKey ? [
+      { id: `tr_${id}`, key: payload.trailerKey, name: 'Official Trailer', site: 'YouTube', type: 'Trailer', official: true }
+    ] : existing.trailers
+  };
+
+  customMediaCatalog[index] = updated;
+  movieCache.clear();
+  return updated;
 }
 
 export function deleteCustomMedia(id: number): boolean {
@@ -119,6 +177,25 @@ function getTvPool(): MediaItem[] {
   return [...customMediaCatalog.filter(m => m.mediaType === 'tv'), ...CURATED_TV_SHOWS];
 }
 
+function getAnimePool(): MediaItem[] {
+  return [...customMediaCatalog.filter(m => m.mediaType === 'anime'), ...CURATED_ANIME];
+}
+
+function getDocumentariesPool(): MediaItem[] {
+  return [...customMediaCatalog.filter(m => m.mediaType === 'documentary'), ...CURATED_DOCUMENTARIES];
+}
+
+function getPoolByMediaType(mediaType: string = 'all'): MediaItem[] {
+  if (mediaType === 'movie') return getMoviesPool();
+  if (mediaType === 'tv') return getTvPool();
+  if (mediaType === 'anime') return getAnimePool();
+  if (mediaType === 'documentary') return getDocumentariesPool();
+  if (mediaType === 'animation') {
+    return getAllPool().filter(m => m.mediaType === 'animation' || m.genres.some(g => g.name.toLowerCase() === 'animation' || g.name.toLowerCase() === 'anime'));
+  }
+  return getAllPool();
+}
+
 function getAllPool(): MediaItem[] {
   return [...customMediaCatalog, ...ALL_MEDIA_CATALOG];
 }
@@ -131,10 +208,8 @@ function getAllPool(): MediaItem[] {
 export class CuratedMovieProvider implements MovieProvider {
   name = 'CuratedCatalog';
 
-  async getTrending(mediaType: 'all' | 'movie' | 'tv' = 'all', timeWindow: 'day' | 'week' = 'day'): Promise<MediaItem[]> {
-    let items = getAllPool();
-    if (mediaType === 'movie') items = getMoviesPool();
-    if (mediaType === 'tv') items = getTvPool();
+  async getTrending(mediaType: 'all' | 'movie' | 'tv' | 'anime' | 'documentary' | 'animation' = 'all', timeWindow: 'day' | 'week' = 'day'): Promise<MediaItem[]> {
+    const items = getPoolByMediaType(mediaType);
 
     // Sort by rating and vote count
     const sorted = [...items].sort((a, b) => {
@@ -145,11 +220,11 @@ export class CuratedMovieProvider implements MovieProvider {
       return b.voteAverage - a.voteAverage;
     });
 
-    return sorted.slice(0, 12);
+    return sorted.slice(0, 16);
   }
 
-  async getPopular(mediaType: 'movie' | 'tv', page = 1): Promise<PaginatedResult<MediaItem>> {
-    const pool = mediaType === 'movie' ? getMoviesPool() : getTvPool();
+  async getPopular(mediaType: 'movie' | 'tv' | 'anime' | 'documentary' | 'animation', page = 1): Promise<PaginatedResult<MediaItem>> {
+    const pool = getPoolByMediaType(mediaType);
     const sorted = [...pool].sort((a, b) => (b.voteCount || 0) - (a.voteCount || 0));
     const pageSize = 12;
     const start = (page - 1) * pageSize;
@@ -177,8 +252,8 @@ export class CuratedMovieProvider implements MovieProvider {
     };
   }
 
-  async getTopRated(mediaType: 'movie' | 'tv', page = 1): Promise<PaginatedResult<MediaItem>> {
-    const pool = mediaType === 'movie' ? getMoviesPool() : getTvPool();
+  async getTopRated(mediaType: 'movie' | 'tv' | 'anime' | 'documentary' | 'animation', page = 1): Promise<PaginatedResult<MediaItem>> {
+    const pool = getPoolByMediaType(mediaType);
     const sorted = [...pool].sort((a, b) => b.voteAverage - a.voteAverage);
     const pageSize = 12;
     const start = (page - 1) * pageSize;
@@ -192,25 +267,25 @@ export class CuratedMovieProvider implements MovieProvider {
     };
   }
 
-  async getDetails(id: number, mediaType: 'movie' | 'tv'): Promise<MediaItem | null> {
-    const pool = mediaType === 'movie' ? getMoviesPool() : getTvPool();
-    const found = pool.find((item) => item.id === id);
-    if (found) return found;
+  async getDetails(id: number, mediaType?: 'movie' | 'tv' | 'anime' | 'documentary' | 'animation' | string): Promise<MediaItem | null> {
+    if (mediaType && mediaType !== 'all') {
+      const pool = getPoolByMediaType(mediaType);
+      const found = pool.find((item) => item.id === id);
+      if (found) return found;
+    }
 
-    // Fallback search across both media types if ID was matched
+    // Fallback search across all media items
     const crossFound = getAllPool().find((item) => item.id === id);
     return crossFound || null;
   }
 
-  async search(query: string, mediaType: 'all' | 'movie' | 'tv' = 'all', page = 1): Promise<PaginatedResult<MediaItem>> {
+  async search(query: string, mediaType: 'all' | 'movie' | 'tv' | 'anime' | 'documentary' | 'animation' = 'all', page = 1): Promise<PaginatedResult<MediaItem>> {
     const q = (query || '').trim().toLowerCase();
     if (!q) {
       return { results: [], page: 1, totalPages: 0, totalResults: 0 };
     }
 
-    let pool = getAllPool();
-    if (mediaType === 'movie') pool = getMoviesPool();
-    if (mediaType === 'tv') pool = getTvPool();
+    const pool = getPoolByMediaType(mediaType);
 
     const filtered = pool.filter((item) => {
       const matchTitle = item.title.toLowerCase().includes(q);
@@ -239,10 +314,8 @@ export class CuratedMovieProvider implements MovieProvider {
     return GENRES_LIST;
   }
 
-  async getByGenre(genreId: number, mediaType: 'all' | 'movie' | 'tv' = 'all', page = 1): Promise<PaginatedResult<MediaItem>> {
-    let pool = getAllPool();
-    if (mediaType === 'movie') pool = getMoviesPool();
-    if (mediaType === 'tv') pool = getTvPool();
+  async getByGenre(genreId: number, mediaType: 'all' | 'movie' | 'tv' | 'anime' | 'documentary' | 'animation' = 'all', page = 1): Promise<PaginatedResult<MediaItem>> {
+    const pool = getPoolByMediaType(mediaType);
 
     const filtered = pool.filter((item) => item.genres.some((g) => g.id === genreId));
     const pageSize = 12;
@@ -257,12 +330,12 @@ export class CuratedMovieProvider implements MovieProvider {
     };
   }
 
-  async getRecommendations(id: number, mediaType: 'movie' | 'tv'): Promise<MediaItem[]> {
+  async getRecommendations(id: number, mediaType?: 'movie' | 'tv' | 'anime' | 'documentary' | 'animation' | string): Promise<MediaItem[]> {
     const current = await this.getDetails(id, mediaType);
     if (!current) return [];
 
     const currentGenreIds = current.genres.map((g) => g.id);
-    const pool = mediaType === 'movie' ? getMoviesPool() : getTvPool();
+    const pool = getPoolByMediaType(current.mediaType);
 
     const similar = pool
       .filter((item) => item.id !== id)
@@ -277,7 +350,7 @@ export class CuratedMovieProvider implements MovieProvider {
     return similar.slice(0, 8);
   }
 
-  async getCredits(id: number, mediaType: 'movie' | 'tv'): Promise<{ cast: CastMember[]; crew: CrewMember[] }> {
+  async getCredits(id: number, mediaType?: 'movie' | 'tv' | 'anime' | 'documentary' | 'animation' | string): Promise<{ cast: CastMember[]; crew: CrewMember[] }> {
     const item = await this.getDetails(id, mediaType);
     return {
       cast: item?.cast || [],
@@ -285,7 +358,7 @@ export class CuratedMovieProvider implements MovieProvider {
     };
   }
 
-  async getTrailers(id: number, mediaType: 'movie' | 'tv'): Promise<VideoTrailer[]> {
+  async getTrailers(id: number, mediaType?: 'movie' | 'tv' | 'anime' | 'documentary' | 'animation' | string): Promise<VideoTrailer[]> {
     const item = await this.getDetails(id, mediaType);
     return item?.trailers || [];
   }

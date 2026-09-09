@@ -14,42 +14,160 @@ import {
   Tv,
   Star,
   Activity,
-  UserCheck
+  UserCheck,
+  Sparkles,
+  Clapperboard,
+  Video,
+  Edit,
+  Play,
+  Layers,
+  Building2,
+  Clock,
+  Eye
 } from 'lucide-react';
 import { useAuth, HARDCODED_ADMIN_EMAIL } from '../context/AuthContext';
 import { apiClient } from '../services/apiClient';
-import { User, AdminStats, MediaItem, CustomMediaPayload } from '../types';
+import { User, AdminStats, MediaItem, CustomMediaPayload, MediaType } from '../types';
 
 interface AdminDashboardPageProps {
   onNavigate: (view: string, params?: Record<string, unknown>) => void;
 }
 
+const ALL_GENRE_OPTIONS = [
+  'Action', 'Adventure', 'Animation', 'Anime', 'Comedy', 'Crime',
+  'Documentary', 'Drama', 'Family', 'Fantasy', 'History', 'Horror',
+  'Music', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western',
+  'Shonen', 'Seinen', 'Supernatural', 'Cyberpunk', 'Slice of Life'
+];
+
+const QUICK_PRESETS: Array<{ label: string; data: CustomMediaPayload }> = [
+  {
+    label: '✨ Anime: Attack on Titan (Final Season)',
+    data: {
+      title: 'Attack on Titan: The Final Season',
+      originalTitle: '進撃の巨人 The Final Season',
+      mediaType: 'anime',
+      overview: 'After years of fierce war against Titans, the Survey Corps journeys across the sea to Marley, uncovering the true truth of Eldia and humanity\'s tragic cycle of freedom and sacrifice.',
+      posterPath: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1000',
+      backdropPath: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1200',
+      releaseDate: '2023-11-04',
+      voteAverage: 9.2,
+      voteCount: 145000,
+      runtime: 24,
+      seasonsCount: 4,
+      episodesCount: 89,
+      director: 'Yuichiro Hayashi',
+      studio: 'MAPPA',
+      castNames: ['Yuki Kaji', 'Yui Ishikawa', 'Marina Inoue', 'Hiroshi Kamiya'],
+      genres: ['Anime', 'Action', 'Dark Fantasy', 'Mystery'],
+      trailerKey: 'M_OauHnAFc8'
+    }
+  },
+  {
+    label: '✨ Anime: Demon Slayer: Infinity Castle',
+    data: {
+      title: 'Demon Slayer: Kimetsu no Yaiba - Infinity Castle',
+      originalTitle: '鬼滅の刃 無限城編',
+      mediaType: 'anime',
+      overview: 'The Demon Slayer Corps plunge directly into Muzan Kibutsuji\'s multidimensional Infinity Castle for the final climactic confrontation between Hashira and the Upper Rank demons.',
+      posterPath: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=1000',
+      backdropPath: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1200',
+      releaseDate: '2025-04-15',
+      voteAverage: 9.3,
+      voteCount: 98000,
+      runtime: 110,
+      director: 'Haruo Sotozaki',
+      studio: 'Ufotable',
+      castNames: ['Natsuki Hanae', 'Akari Kito', 'Hiro Shimono', 'Yoshitsugu Matsuoka'],
+      genres: ['Anime', 'Action', 'Supernatural', 'Shonen'],
+      trailerKey: 'dQw4w9WgXcQ'
+    }
+  },
+  {
+    label: '🎬 Movie: Interstellar Remastered',
+    data: {
+      title: 'Interstellar: IMAX Special Edition',
+      originalTitle: 'Interstellar',
+      mediaType: 'movie',
+      overview: 'When Earth becomes uninhabitable in the future, a farmer and ex-NASA pilot, Joseph Cooper, is tasked to pilot a spacecraft, along with a team of researchers, to find a new planet for humans.',
+      posterPath: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1000',
+      backdropPath: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200',
+      releaseDate: '2024-11-07',
+      voteAverage: 8.7,
+      voteCount: 34000,
+      runtime: 169,
+      director: 'Christopher Nolan',
+      studio: 'Syncopy / Warner Bros.',
+      castNames: ['Matthew McConaughey', 'Anne Hathaway', 'Jessica Chastain', 'Michael Caine'],
+      genres: ['Sci-Fi', 'Drama', 'Adventure'],
+      trailerKey: 'zSWdZVtXT7E'
+    }
+  },
+  {
+    label: '🌿 Documentary: Planet Earth III',
+    data: {
+      title: 'Planet Earth III: Natural Wonders',
+      originalTitle: 'Planet Earth III',
+      mediaType: 'documentary',
+      overview: 'Sir David Attenborough narrates groundbreaking footage across extraordinary ecosystems, unveiling animal resilience in our rapidly transforming world.',
+      posterPath: 'https://images.unsplash.com/photo-1534567153574-2b12153a87f0?q=80&w=1000',
+      backdropPath: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1200',
+      releaseDate: '2023-10-22',
+      voteAverage: 9.4,
+      voteCount: 18000,
+      runtime: 58,
+      seasonsCount: 1,
+      episodesCount: 8,
+      director: 'Michael Gunton',
+      studio: 'BBC Studios Natural History Unit',
+      castNames: ['Sir David Attenborough'],
+      genres: ['Documentary', 'Nature', 'Science'],
+      trailerKey: '7nN6G_n3h2k'
+    }
+  }
+];
+
+const DEFAULT_FORM_STATE: CustomMediaPayload = {
+  title: '',
+  originalTitle: '',
+  mediaType: 'anime',
+  overview: '',
+  posterPath: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1000',
+  backdropPath: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1200',
+  releaseDate: new Date().toISOString().split('T')[0],
+  voteAverage: 8.8,
+  voteCount: 1200,
+  runtime: 24,
+  seasonsCount: 1,
+  episodesCount: 12,
+  director: '',
+  studio: '',
+  castNames: ['Main Character', 'Supporting Actor'],
+  genres: ['Anime', 'Action'],
+  trailerKey: '',
+  streamUrl: ''
+};
+
 export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigate }) => {
   const { user, token, isAdmin, toggleAdminAccess, openAuthModal } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'users' | 'catalog' | 'security'>('users');
+  const [activeTab, setActiveTab] = useState<'catalog' | 'users' | 'security'>('catalog');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [usersList, setUsersList] = useState<User[]>([]);
   const [customMovies, setCustomMovies] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // User search filter
+  // Search & Filters
+  const [catalogFilterType, setCatalogFilterType] = useState<string>('all');
+  const [catalogSearch, setCatalogSearch] = useState('');
   const [userSearch, setUserSearch] = useState('');
 
-  // Add Movie Modal State
-  const [showAddMovieModal, setShowAddMovieModal] = useState(false);
-  const [movieForm, setMovieForm] = useState<CustomMediaPayload>({
-    title: '',
-    mediaType: 'movie',
-    overview: '',
-    posterPath: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1000',
-    backdropPath: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=1200',
-    releaseDate: new Date().toISOString().split('T')[0],
-    voteAverage: 8.5,
-    genres: ['Action', 'Sci-Fi'],
-    trailerKey: 'Way9Dexny3w'
-  });
+  // Add & Edit Media Modal State
+  const [showMediaModal, setShowMediaModal] = useState(false);
+  const [editingMediaId, setEditingMediaId] = useState<number | null>(null);
+  const [mediaForm, setMediaForm] = useState<CustomMediaPayload>(DEFAULT_FORM_STATE);
+  const [castInput, setCastInput] = useState('Main Character, Supporting Actor');
   const [formSubmitting, setFormSubmitting] = useState(false);
 
   // Fetch admin data
@@ -80,10 +198,122 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
   // Flash message timeout
   useEffect(() => {
     if (actionMessage) {
-      const timer = setTimeout(() => setActionMessage(null), 4500);
+      const timer = setTimeout(() => setActionMessage(null), 5000);
       return () => clearTimeout(timer);
     }
   }, [actionMessage]);
+
+  // Handle open modal for creating new title
+  const handleOpenAddModal = (preset?: CustomMediaPayload) => {
+    setEditingMediaId(null);
+    if (preset) {
+      setMediaForm({ ...preset });
+      setCastInput(Array.isArray(preset.castNames) ? preset.castNames.join(', ') : (preset.castNames || ''));
+    } else {
+      setMediaForm({ ...DEFAULT_FORM_STATE });
+      setCastInput('Main Voice Actor, Supporting Character');
+    }
+    setShowMediaModal(true);
+  };
+
+  // Handle open modal for editing title
+  const handleOpenEditModal = (item: MediaItem) => {
+    setEditingMediaId(item.id);
+    const existingGenres = item.genres.map(g => g.name);
+    const existingCast = item.cast ? item.cast.map(c => c.name) : [];
+
+    setMediaForm({
+      title: item.title,
+      originalTitle: item.originalTitle || item.title,
+      mediaType: item.mediaType,
+      overview: item.overview,
+      posterPath: item.posterPath,
+      backdropPath: item.backdropPath || item.posterPath,
+      releaseDate: item.releaseDate || new Date().toISOString().split('T')[0],
+      voteAverage: item.voteAverage,
+      voteCount: item.voteCount,
+      runtime: item.runtime || 24,
+      seasonsCount: item.seasonsCount,
+      episodesCount: item.episodesCount,
+      director: item.director || '',
+      studio: item.studio || '',
+      castNames: existingCast,
+      genres: existingGenres.length > 0 ? existingGenres : ['Anime'],
+      trailerKey: item.trailers && item.trailers.length > 0 ? item.trailers[0].key : '',
+      streamUrl: item.streamUrl || ''
+    });
+    setCastInput(existingCast.join(', '));
+    setShowMediaModal(true);
+  };
+
+  // Helper to extract clean youtube key
+  const sanitizeTrailerKey = (val?: string): string => {
+    if (!val) return '';
+    const clean = val.trim();
+    if (clean.includes('watch?v=')) {
+      const match = clean.match(/v=([^&]+)/);
+      return match ? match[1] : clean;
+    }
+    if (clean.includes('youtu.be/')) {
+      const match = clean.match(/youtu\.be\/([^?&]+)/);
+      return match ? match[1] : clean;
+    }
+    return clean;
+  };
+
+  // Handle Add/Edit Media Submit
+  const handleMediaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    setFormSubmitting(true);
+
+    try {
+      const parsedCast = castInput
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const payload: CustomMediaPayload = {
+        ...mediaForm,
+        castNames: parsedCast,
+        trailerKey: sanitizeTrailerKey(mediaForm.trailerKey)
+      };
+
+      if (editingMediaId) {
+        await apiClient.updateAdminMovie(token, editingMediaId, payload);
+        setActionMessage({ type: 'success', text: `Successfully updated "${payload.title}".` });
+      } else {
+        await apiClient.addAdminMovie(token, payload);
+        setActionMessage({
+          type: 'success',
+          text: `Successfully uploaded ${payload.mediaType.toUpperCase()}: "${payload.title}" to catalog!`
+        });
+      }
+
+      setShowMediaModal(false);
+      fetchData();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Could not save media item.';
+      setActionMessage({ type: 'error', text: msg });
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
+  // Delete Custom Movie
+  const handleDeleteMedia = async (movieId: number, title: string) => {
+    if (!token) return;
+    if (!window.confirm(`Are you sure you want to remove "${title}" from the MovieLot catalog?`)) return;
+
+    try {
+      await apiClient.deleteAdminMovie(token, movieId);
+      setActionMessage({ type: 'success', text: `"${title}" has been removed from the catalog.` });
+      fetchData();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Could not remove media.';
+      setActionMessage({ type: 'error', text: msg });
+    }
+  };
 
   // Delete user
   const handleDeleteUser = async (targetUser: User) => {
@@ -93,7 +323,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
       return;
     }
 
-    if (!window.confirm(`Are you sure you want to delete user ${targetUser.name} (${targetUser.email})?`)) {
+    if (!window.confirm(`Are you sure you want to delete user account ${targetUser.name} (${targetUser.email})?`)) {
       return;
     }
 
@@ -129,52 +359,19 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
     }
   };
 
-  // Add Movie
-  const handleAddMovieSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!token) return;
-    setFormSubmitting(true);
-
-    try {
-      await apiClient.addAdminMovie(token, movieForm);
-      setActionMessage({ type: 'success', text: `Successfully added "${movieForm.title}" to catalog.` });
-      setShowAddMovieModal(false);
-      setMovieForm({
-        title: '',
-        mediaType: 'movie',
-        overview: '',
-        posterPath: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1000',
-        backdropPath: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=1200',
-        releaseDate: new Date().toISOString().split('T')[0],
-        voteAverage: 8.5,
-        genres: ['Action', 'Sci-Fi'],
-        trailerKey: 'Way9Dexny3w'
-      });
-      fetchData();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Could not add title.';
-      setActionMessage({ type: 'error', text: msg });
-    } finally {
-      setFormSubmitting(false);
-    }
+  // Toggle Genre in Form
+  const handleToggleGenre = (genreName: string) => {
+    setMediaForm(prev => {
+      const exists = prev.genres.includes(genreName);
+      if (exists) {
+        return { ...prev, genres: prev.genres.filter(g => g !== genreName) };
+      } else {
+        return { ...prev, genres: [...prev.genres, genreName] };
+      }
+    });
   };
 
-  // Delete Custom Movie
-  const handleDeleteMovie = async (movieId: number, title: string) => {
-    if (!token) return;
-    if (!window.confirm(`Remove "${title}" from MovieLot catalog?`)) return;
-
-    try {
-      await apiClient.deleteAdminMovie(token, movieId);
-      setActionMessage({ type: 'success', text: `Title "${title}" removed from catalog.` });
-      fetchData();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Could not remove movie.';
-      setActionMessage({ type: 'error', text: msg });
-    }
-  };
-
-  // If not logged in as Admin, show high security Access Gate
+  // Access Gate for Non-Admins
   if (!user || !isAdmin) {
     return (
       <main className="min-h-screen pt-28 pb-16 px-4 flex items-center justify-center">
@@ -188,12 +385,11 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
           <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
             {user?.email?.toLowerCase() === HARDCODED_ADMIN_EMAIL.toLowerCase() ? (
               <>
-                You are currently signed in, but Administrative Mode is currently toggled OFF.
+                You are currently signed in, but Administrative Mode is toggled OFF.
               </>
             ) : (
               <>
-                This administrative control panel requires verified root administrator security clearance.
-                Please sign in with an authorized administrator account.
+                This administrative operations dashboard requires verified root administrator privileges.
               </>
             )}
           </p>
@@ -229,6 +425,17 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
     );
   }
 
+  // Filter custom catalog
+  const filteredCatalog = customMovies.filter(item => {
+    const matchesType = catalogFilterType === 'all' || item.mediaType === catalogFilterType;
+    const matchesSearch =
+      item.title.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+      (item.originalTitle && item.originalTitle.toLowerCase().includes(catalogSearch.toLowerCase())) ||
+      (item.studio && item.studio.toLowerCase().includes(catalogSearch.toLowerCase())) ||
+      (item.director && item.director.toLowerCase().includes(catalogSearch.toLowerCase()));
+    return matchesType && matchesSearch;
+  });
+
   // Filter users by search term
   const filteredUsers = usersList.filter(
     u =>
@@ -239,8 +446,8 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
 
   return (
     <main className="min-h-screen pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto animate-fadeIn">
-      {/* Admin Top Header Banner */}
-      <div className="bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-zinc-950 border border-amber-500/30 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl shadow-black/40 relative overflow-hidden">
+      {/* Top Header Banner */}
+      <div className="bg-gradient-to-r from-zinc-900 via-zinc-900/95 to-zinc-950 border border-amber-500/30 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl shadow-black/40 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
@@ -251,23 +458,32 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-500 text-black tracking-wider uppercase">
-                  Root Admin Console
+                  Root Administrator
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Secured & Active
+                  Privileged Operations Active
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-['Space_Grotesk']">
-                MovieLot Administrative Operations
+                Media & Platform Control Center
               </h1>
               <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
-                Authenticated as <span className="text-amber-400 font-semibold">{user.email}</span> • Full Privilege Clearance
+                Upload & manage Movies, TV Shows, Anime series, and Documentaries across MovieLot.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5 self-stretch md:self-auto">
+            <button
+              type="button"
+              id="btn-upload-new-media-header"
+              onClick={() => handleOpenAddModal()}
+              className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer hover:scale-[1.02] active:scale-95"
+            >
+              <Plus size={16} />
+              <span>Upload Title</span>
+            </button>
             <button
               type="button"
               onClick={fetchData}
@@ -276,14 +492,6 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
               title="Refresh console metrics"
             >
               <RefreshCw size={18} className={loading ? 'animate-spin text-amber-400' : ''} />
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigate('home')}
-              className="flex-1 md:flex-initial py-2.5 px-4 rounded-xl border border-zinc-800 bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
-            >
-              <span>Exit to Main Site</span>
-              <ExternalLink size={14} />
             </button>
           </div>
         </div>
@@ -308,311 +516,330 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
       </div>
 
       {/* KPI METRICS OVERVIEW */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {/* Total Users */}
-        <div className="p-5 rounded-2xl bg-zinc-900/70 border border-zinc-800 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
-            <Users size={24} />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-8">
+        {/* Total Movies */}
+        <div className="p-4 rounded-2xl bg-zinc-900/70 border border-zinc-800 flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+            <Film size={20} />
           </div>
           <div>
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Registered Users</span>
-            <div className="text-2xl font-black text-white font-['Space_Grotesk']">
+            <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Movies</span>
+            <div className="text-xl font-black text-white font-['Space_Grotesk']">
+              {stats?.totalMovies || 12}
+            </div>
+            <span className="text-[10px] text-zinc-500">Feature Films</span>
+          </div>
+        </div>
+
+        {/* Total Anime */}
+        <div className="p-4 rounded-2xl bg-zinc-900/70 border border-amber-500/20 flex items-center gap-3.5 shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+            <Sparkles size={20} />
+          </div>
+          <div>
+            <span className="text-[10px] font-semibold text-purple-400 uppercase tracking-wider">Anime</span>
+            <div className="text-xl font-black text-white font-['Space_Grotesk']">
+              {stats?.totalAnime || 8}
+            </div>
+            <span className="text-[10px] text-zinc-500">Series & Films</span>
+          </div>
+        </div>
+
+        {/* Total TV Shows */}
+        <div className="p-4 rounded-2xl bg-zinc-900/70 border border-zinc-800 flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+            <Tv size={20} />
+          </div>
+          <div>
+            <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">TV Series</span>
+            <div className="text-xl font-black text-white font-['Space_Grotesk']">
+              {stats?.totalTVShows || 6}
+            </div>
+            <span className="text-[10px] text-zinc-500">Shows & Miniseries</span>
+          </div>
+        </div>
+
+        {/* Custom Uploads */}
+        <div className="p-4 rounded-2xl bg-zinc-900/70 border border-zinc-800 flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+            <Layers size={20} />
+          </div>
+          <div>
+            <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">Admin Uploads</span>
+            <div className="text-xl font-black text-white font-['Space_Grotesk']">
+              {customMovies.length}
+            </div>
+            <span className="text-[10px] text-zinc-500">Custom Titles</span>
+          </div>
+        </div>
+
+        {/* Registered Users */}
+        <div className="p-4 rounded-2xl bg-zinc-900/70 border border-zinc-800 flex items-center gap-3.5 col-span-2 sm:col-span-1">
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
+            <Users size={20} />
+          </div>
+          <div>
+            <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Total Users</span>
+            <div className="text-xl font-black text-white font-['Space_Grotesk']">
               {stats?.totalUsers || usersList.length}
             </div>
-            <span className="text-[11px] text-zinc-400">Total accounts active</span>
-          </div>
-        </div>
-
-        {/* Catalog Items */}
-        <div className="p-5 rounded-2xl bg-zinc-900/70 border border-zinc-800 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
-            <Film size={24} />
-          </div>
-          <div>
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Catalog Titles</span>
-            <div className="text-2xl font-black text-white font-['Space_Grotesk']">
-              {(stats?.totalMovies || 12) + (stats?.totalTVShows || 6) + customMovies.length}
-            </div>
-            <span className="text-[11px] text-amber-400 font-medium">+{customMovies.length} custom added</span>
-          </div>
-        </div>
-
-        {/* Active Sessions */}
-        <div className="p-5 rounded-2xl bg-zinc-900/70 border border-zinc-800 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
-            <UserCheck size={24} />
-          </div>
-          <div>
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Active Sessions</span>
-            <div className="text-2xl font-black text-white font-['Space_Grotesk']">
-              {stats?.activeSessions || 1}
-            </div>
-            <span className="text-[11px] text-zinc-400">Encrypted token bearer</span>
-          </div>
-        </div>
-
-        {/* Security / System */}
-        <div className="p-5 rounded-2xl bg-zinc-900/70 border border-zinc-800 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
-            <Activity size={24} />
-          </div>
-          <div>
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Admin Security</span>
-            <div className="text-lg font-black text-emerald-400 font-['Space_Grotesk']">
-              PBKDF2 Salted
-            </div>
-            <span className="text-[11px] text-zinc-400">Zero plaintext leakage</span>
+            <span className="text-[10px] text-zinc-500">Accounts Active</span>
           </div>
         </div>
       </div>
 
-      {/* TABS NAVIGATION */}
-      <div className="flex border-b border-zinc-800 mb-6 gap-2 sm:gap-4 overflow-x-auto">
+      {/* Navigation Tabs */}
+      <div className="flex items-center gap-2 border-b border-zinc-800 pb-4 mb-6">
         <button
           type="button"
-          onClick={() => setActiveTab('users')}
-          className={`pb-3 px-3 sm:px-4 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-            activeTab === 'users'
-              ? 'border-amber-500 text-amber-400 font-bold'
-              : 'border-transparent text-zinc-400 hover:text-white'
+          id="tab-admin-catalog"
+          onClick={() => setActiveTab('catalog')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+            activeTab === 'catalog'
+              ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
+              : 'bg-zinc-900/80 text-zinc-400 hover:text-white hover:bg-zinc-850'
           }`}
         >
-          <Users size={16} />
+          <Clapperboard size={15} />
+          <span>Catalog & Upload Management ({customMovies.length})</span>
+        </button>
+
+        <button
+          type="button"
+          id="tab-admin-users"
+          onClick={() => setActiveTab('users')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+            activeTab === 'users'
+              ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
+              : 'bg-zinc-900/80 text-zinc-400 hover:text-white hover:bg-zinc-850'
+          }`}
+        >
+          <Users size={15} />
           <span>User Accounts ({usersList.length})</span>
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveTab('catalog')}
-          className={`pb-3 px-3 sm:px-4 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-            activeTab === 'catalog'
-              ? 'border-amber-500 text-amber-400 font-bold'
-              : 'border-transparent text-zinc-400 hover:text-white'
-          }`}
-        >
-          <Film size={16} />
-          <span>Catalog & Content Management</span>
-        </button>
-
-        <button
-          type="button"
+          id="tab-admin-security"
           onClick={() => setActiveTab('security')}
-          className={`pb-3 px-3 sm:px-4 text-sm font-semibold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
             activeTab === 'security'
-              ? 'border-amber-500 text-amber-400 font-bold'
-              : 'border-transparent text-zinc-400 hover:text-white'
+              ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
+              : 'bg-zinc-900/80 text-zinc-400 hover:text-white hover:bg-zinc-850'
           }`}
         >
-          <Lock size={16} />
-          <span>Security & Confidentiality Protocol</span>
+          <Lock size={15} />
+          <span>Security Protocol</span>
         </button>
       </div>
 
-      {/* TAB 1: USERS MANAGEMENT */}
-      {activeTab === 'users' && (
-        <div className="bg-zinc-950 border border-zinc-800/90 rounded-2xl overflow-hidden shadow-xl">
-          {/* Table Toolbar */}
-          <div className="p-4 sm:p-5 border-b border-zinc-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-zinc-900/50">
-            <div className="relative flex-1 max-w-md">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
-                <Search size={16} />
-              </div>
-              <input
-                type="text"
-                value={userSearch}
-                onChange={(e) => setUserSearch(e.target.value)}
-                placeholder="Search users by name, email, or role..."
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs sm:text-sm placeholder-zinc-500 outline-none focus:border-amber-500"
-              />
-            </div>
-
-            <div className="text-xs text-zinc-400 flex items-center gap-2 self-end sm:self-auto">
-              <span>Showing {filteredUsers.length} of {usersList.length} user accounts</span>
-            </div>
-          </div>
-
-          {/* Users Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm text-zinc-300">
-              <thead className="bg-zinc-900/90 text-zinc-400 uppercase text-[10px] tracking-wider font-semibold border-b border-zinc-800">
-                <tr>
-                  <th className="py-3.5 px-4 sm:px-6">User / Member</th>
-                  <th className="py-3.5 px-4">Email Address</th>
-                  <th className="py-3.5 px-4">Access Role</th>
-                  <th className="py-3.5 px-4">Registered Date</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-850">
-                {filteredUsers.map((u) => {
-                  const isPrimaryAdmin = u.email.toLowerCase() === HARDCODED_ADMIN_EMAIL.toLowerCase();
-                  return (
-                    <tr key={u.id} className="hover:bg-zinc-900/40 transition-colors">
-                      <td className="py-3.5 px-4 sm:px-6">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs uppercase shadow-inner ${
-                              u.role === 'admin'
-                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                                : 'bg-zinc-800 text-zinc-300'
-                            }`}
-                          >
-                            {u.name.substring(0, 2)}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-white flex items-center gap-1.5">
-                              <span>{u.name}</span>
-                              {isPrimaryAdmin && (
-                                <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                                  Primary Root
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-[11px] text-zinc-500 font-mono">{u.id}</div>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-4 font-mono text-zinc-300">
-                        {u.email}
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-                            u.role === 'admin'
-                              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                              : 'bg-zinc-800 text-zinc-300 border border-zinc-700'
-                          }`}
-                        >
-                          {u.role === 'admin' && <Shield size={11} />}
-                          {u.role}
-                        </span>
-                      </td>
-
-                      <td className="py-3.5 px-4 text-zinc-400 text-xs">
-                        {new Date(u.createdAt).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </td>
-
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {!isPrimaryAdmin ? (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => handleToggleRole(u)}
-                                className="px-2.5 py-1 rounded-lg text-xs font-medium border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors cursor-pointer"
-                                title="Switch between admin and member role"
-                              >
-                                {u.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteUser(u)}
-                                className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-950/40 transition-colors cursor-pointer"
-                                title="Delete account"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </>
-                          ) : (
-                            <span className="text-[11px] text-zinc-500 italic">Protected Root</span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: CATALOG & CONTENT MANAGEMENT */}
+      {/* TAB 1: CATALOG & MEDIA UPLOADS */}
       {activeTab === 'catalog' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-zinc-950 border border-zinc-800 rounded-2xl p-5">
-            <div>
-              <h2 className="text-lg font-bold text-white font-['Space_Grotesk']">
-                Catalog & MovieLot Exclusive Additions
-              </h2>
-              <p className="text-xs text-zinc-400">
-                Add custom premiere titles, trailers, and series directly to the MovieLot discovery catalog.
-              </p>
+          {/* Action & Filter Toolbar */}
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-white font-['Space_Grotesk']">
+                  Upload & Manage Titles (Movies, Anime, TV, Documentaries)
+                </h2>
+                <p className="text-xs text-zinc-400">
+                  Add full-length movies, anime series, documentaries, studio information, and trailer players.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  id="btn-add-title-modal-trigger"
+                  onClick={() => handleOpenAddModal()}
+                  className="py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-amber-500/20 cursor-pointer"
+                >
+                  <Plus size={16} />
+                  <span>Upload New Media Title</span>
+                </button>
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowAddMovieModal(true)}
-              className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer"
-            >
-              <Plus size={16} />
-              <span>Add New Movie / TV Series</span>
-            </button>
+
+            {/* Quick 1-Click Test Seeder Templates */}
+            <div className="pt-3 border-t border-zinc-900">
+              <span className="text-[11px] font-semibold text-zinc-400 block mb-2">
+                ⚡ Quick-Fill Preset Upload Templates (1-Click Test Seeding):
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {QUICK_PRESETS.map((preset, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleOpenAddModal(preset.data)}
+                    className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-amber-400 text-xs font-medium transition-colors cursor-pointer"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Filter Pills and Search */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-zinc-900">
+              <div className="flex flex-wrap items-center gap-1.5">
+                {[
+                  { id: 'all', label: 'All Media' },
+                  { id: 'movie', label: 'Movies' },
+                  { id: 'anime', label: 'Anime' },
+                  { id: 'tv', label: 'TV Shows' },
+                  { id: 'documentary', label: 'Documentaries' },
+                  { id: 'animation', label: 'Animation' }
+                ].map(type => (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => setCatalogFilterType(type.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      catalogFilterType === type.id
+                        ? 'bg-amber-500 text-black'
+                        : 'bg-zinc-900 text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                <input
+                  type="text"
+                  placeholder="Search catalog by title, studio, or director..."
+                  value={catalogSearch}
+                  onChange={(e) => setCatalogSearch(e.target.value)}
+                  className="w-full sm:w-72 pl-9 pr-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-amber-500"
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Custom added movies list */}
-          {customMovies.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {customMovies.map((movie) => (
+          {/* Catalog Grid */}
+          {filteredCatalog.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredCatalog.map((item) => (
                 <div
-                  key={movie.id}
-                  className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-lg flex flex-col"
+                  key={item.id}
+                  className="bg-zinc-950 border border-zinc-800/90 rounded-2xl overflow-hidden shadow-lg flex flex-col group hover:border-amber-500/40 transition-all"
                 >
-                  <div className="relative h-44 w-full bg-zinc-900 overflow-hidden">
+                  <div className="relative h-48 w-full bg-zinc-900 overflow-hidden">
                     <img
-                      src={movie.backdropPath || movie.posterPath}
-                      alt={movie.title}
-                      className="w-full h-full object-cover"
+                      src={item.backdropPath || item.posterPath}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
-                    <div className="absolute top-3 left-3 flex gap-1.5">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-500 text-black">
-                        {movie.mediaType}
+                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
+                    <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide ${
+                        item.mediaType === 'anime'
+                          ? 'bg-purple-500 text-white'
+                          : item.mediaType === 'movie'
+                          ? 'bg-amber-500 text-black'
+                          : item.mediaType === 'documentary'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-blue-500 text-white'
+                      }`}>
+                        {item.mediaType}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/70 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/80 text-amber-400 border border-amber-500/30 flex items-center gap-1">
                         <Star size={10} className="fill-amber-400" />
-                        {movie.voteAverage}
+                        {item.voteAverage.toFixed(1)}
                       </span>
+                    </div>
+
+                    {item.studio && (
+                      <div className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-sm border border-zinc-700 text-[10px] font-semibold text-zinc-200">
+                        {item.studio}
+                      </div>
+                    )}
+
+                    <div className="absolute bottom-2 left-3 right-3">
+                      <h3 className="text-base font-bold text-white truncate drop-shadow-md">
+                        {item.title}
+                      </h3>
+                      {item.originalTitle && item.originalTitle !== item.title && (
+                        <p className="text-[11px] text-amber-400 truncate drop-shadow">
+                          {item.originalTitle}
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                     <div>
-                      <h3 className="text-base font-bold text-white mb-1">{movie.title}</h3>
                       <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed mb-3">
-                        {movie.overview}
+                        {item.overview}
                       </p>
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {movie.genres.map((g) => (
-                          <span key={g.id} className="text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+
+                      <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                        {item.seasonsCount && (
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 font-medium">
+                            {item.seasonsCount} Season{item.seasonsCount > 1 ? 's' : ''} ({item.episodesCount || 12} Eps)
+                          </span>
+                        )}
+                        {item.runtime && (
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 flex items-center gap-1">
+                            <Clock size={10} />
+                            {item.runtime}m
+                          </span>
+                        )}
+                        {item.director && (
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+                            Dir: {item.director}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-1">
+                        {item.genres.map((g) => (
+                          <span key={g.id} className="text-[10px] px-2 py-0.5 rounded bg-zinc-900/80 border border-zinc-800/80 text-zinc-400">
                             {g.name}
                           </span>
                         ))}
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-zinc-850 flex items-center justify-between">
-                      <button
-                        type="button"
-                        onClick={() => onNavigate(movie.mediaType === 'tv' ? 'tv-detail' : 'movie-detail', { id: movie.id })}
-                        className="text-xs text-amber-400 hover:text-amber-300 font-medium flex items-center gap-1"
-                      >
-                        <span>View in App</span>
-                        <ExternalLink size={12} />
-                      </button>
+                    <div className="pt-3 border-t border-zinc-900 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (item.mediaType === 'anime') {
+                              onNavigate('anime');
+                            } else if (item.mediaType === 'tv') {
+                              onNavigate('tv-detail', { showId: item.id, initialItem: item });
+                            } else {
+                              onNavigate('movie-detail', { movieId: item.id, initialItem: item });
+                            }
+                          }}
+                          className="text-xs text-zinc-300 hover:text-white font-medium flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors"
+                        >
+                          <Eye size={12} />
+                          <span>View</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditModal(item)}
+                          className="text-xs text-amber-400 hover:text-amber-300 font-medium flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-colors"
+                        >
+                          <Edit size={12} />
+                          <span>Edit</span>
+                        </button>
+                      </div>
 
                       <button
                         type="button"
-                        onClick={() => handleDeleteMovie(movie.id, movie.title)}
-                        className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 font-medium p-1 rounded hover:bg-red-950/40"
+                        onClick={() => handleDeleteMedia(item.id, item.title)}
+                        className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 font-medium px-2 py-1 rounded hover:bg-red-950/40 transition-colors"
                       >
                         <Trash2 size={13} />
-                        <span>Remove</span>
+                        <span>Delete</span>
                       </button>
                     </div>
                   </div>
@@ -621,214 +848,507 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
             </div>
           ) : (
             <div className="bg-zinc-950/60 border border-zinc-850 rounded-2xl p-12 text-center">
-              <Film size={40} className="text-zinc-600 mx-auto mb-3" />
-              <h3 className="text-base font-semibold text-white mb-1">No custom titles added yet</h3>
-              <p className="text-xs text-zinc-400 max-w-sm mx-auto mb-4">
-                You can add exclusive indie films, local releases, or custom trailers directly to the catalog using the button above.
+              <Film size={44} className="text-zinc-600 mx-auto mb-3" />
+              <h3 className="text-base font-semibold text-white mb-1">
+                {customMovies.length === 0 ? 'No custom titles uploaded yet' : 'No titles match current filter'}
+              </h3>
+              <p className="text-xs text-zinc-400 max-w-md mx-auto mb-4">
+                You can upload anime series, movies, and documentaries directly into the MovieLot discovery universe.
               </p>
               <button
                 type="button"
-                onClick={() => setShowAddMovieModal(true)}
-                className="py-2 px-4 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold inline-flex items-center gap-2 cursor-pointer"
+                onClick={() => handleOpenAddModal()}
+                className="py-2.5 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs inline-flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20"
               >
-                <Plus size={14} />
-                <span>Add Your First Title</span>
+                <Plus size={15} />
+                <span>Upload First Title</span>
               </button>
             </div>
           )}
         </div>
       )}
 
-      {/* TAB 3: SECURITY & CONFIDENTIALITY PROTOCOL */}
-      {activeTab === 'security' && (
-        <div className="space-y-6">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
-                <Lock size={20} />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white font-['Space_Grotesk']">
-                  Admin Information Confidentiality & Architecture
-                </h2>
-                <p className="text-xs text-zinc-400">
-                  Detailed security architecture fulfilling the requirement: &quot;admin information also secrate&quot;
-                </p>
-              </div>
+      {/* TAB 2: USER MANAGEMENT */}
+      {activeTab === 'users' && (
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-zinc-950 border border-zinc-800 rounded-2xl p-4">
+            <div>
+              <h2 className="text-base font-bold text-white font-['Space_Grotesk']">
+                Registered Platform Users ({usersList.length})
+              </h2>
+              <p className="text-xs text-zinc-400">Manage privileges, authentication roles, and account security.</p>
             </div>
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                className="pl-9 pr-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-amber-500 w-full sm:w-64"
+              />
+            </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
-                <h3 className="text-sm font-bold text-amber-400 mb-2 flex items-center gap-2">
-                  <CheckCircle size={15} />
-                  1. Server-Side Cryptographic Hashing
-                </h3>
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  All user passwords and administrator credentials are encrypted using Node.js built-in <span className="text-amber-300 font-mono">crypto.pbkdf2Sync</span> with a unique 128-bit cryptographic salt per account, ran over 10,000 SHA-512 iterations. Plaintext passwords are never persisted on disk or returned in API responses.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
-                <h3 className="text-sm font-bold text-amber-400 mb-2 flex items-center gap-2">
-                  <CheckCircle size={15} />
-                  2. Strict Role-Based Access Control (RBAC)
-                </h3>
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  Administrative API endpoints (`/api/admin/*`) enforce the <span className="text-amber-300 font-mono">requireAdmin</span> middleware. Requests lacking a verified Bearer session token associated with role <span className="text-amber-300 font-mono">admin</span> are rejected with HTTP 403 Forbidden.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
-                <h3 className="text-sm font-bold text-amber-400 mb-2 flex items-center gap-2">
-                  <CheckCircle size={15} />
-                  3. Root Admin Protection & Immutability
-                </h3>
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  The primary root administrator account is permanently safeguarded on the backend against accidental deletion or role demotion.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
-                <h3 className="text-sm font-bold text-amber-400 mb-2 flex items-center gap-2">
-                  <CheckCircle size={15} />
-                  4. Ephemeral Session Expiry & Revocation
-                </h3>
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  Tokens are generated using cryptographically strong pseudo-random 256-bit entropy (<span className="text-amber-300 font-mono">ml_sess_...</span>). When an admin logs out or deletes a user, tokens are immediately purged from the active session registry.
-                </p>
-              </div>
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-900/90 text-zinc-400 uppercase tracking-wider font-semibold border-b border-zinc-800">
+                  <tr>
+                    <th className="py-3 px-4">User</th>
+                    <th className="py-3 px-4">Role</th>
+                    <th className="py-3 px-4">Created Date</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-900">
+                  {filteredUsers.map((u) => {
+                    const isPrimary = u.email.toLowerCase() === HARDCODED_ADMIN_EMAIL.toLowerCase();
+                    return (
+                      <tr key={u.id} className="hover:bg-zinc-900/40 transition-colors">
+                        <td className="py-3.5 px-4">
+                          <div className="font-bold text-white flex items-center gap-2">
+                            {u.name}
+                            {isPrimary && (
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-amber-500 text-black">
+                                ROOT
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-zinc-400 text-[11px]">{u.email}</div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            u.role === 'admin'
+                              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                              : 'bg-zinc-800 text-zinc-300'
+                          }`}>
+                            {u.role.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-zinc-400 text-[11px]">
+                          {new Date(u.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          {!isPrimary ? (
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleRole(u)}
+                                className="px-2.5 py-1 rounded-lg text-xs font-medium border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white"
+                              >
+                                {u.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteUser(u)}
+                                className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-950/40"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-zinc-500 italic">Protected Root Account</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       )}
 
-      {/* ADD MOVIE MODAL */}
-      {showAddMovieModal && (
+      {/* TAB 3: SECURITY PROTOCOL */}
+      {activeTab === 'security' && (
+        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+              <Lock size={20} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white font-['Space_Grotesk']">
+                Confidentiality & Administrator Protection Architecture
+              </h2>
+              <p className="text-xs text-zinc-400">
+                Administrative security protocols, token authentication, and role validation.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
+              <h3 className="text-sm font-bold text-amber-400 mb-2 flex items-center gap-2">
+                <CheckCircle size={15} />
+                1. Cryptographic Password Hashing
+              </h3>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                All credentials are encrypted using PBKDF2 SHA-512 with unique cryptographic salt per user over 10,000 rounds. Plaintext secrets are never stored or logged.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
+              <h3 className="text-sm font-bold text-amber-400 mb-2 flex items-center gap-2">
+                <CheckCircle size={15} />
+                2. Role-Based Access Control (RBAC)
+              </h3>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                All `/api/admin/*` endpoints strictly verify Bearer session tokens with the <span className="text-amber-300 font-mono">requireAdmin</span> middleware.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
+              <h3 className="text-sm font-bold text-amber-400 mb-2 flex items-center gap-2">
+                <CheckCircle size={15} />
+                3. Root Admin Protection
+              </h3>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                The primary administrator is permanently protected from deletion, downgrade, or unauthorized modifications.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
+              <h3 className="text-sm font-bold text-amber-400 mb-2 flex items-center gap-2">
+                <CheckCircle size={15} />
+                4. Multi-Media Universal Catalog
+              </h3>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                Admins have full capability to upload, modify, and stream Movies, Anime, TV Shows, and Documentaries with custom trailers and metadata.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ADD / EDIT MEDIA MODAL */}
+      {showMediaModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"
-          onClick={() => setShowAddMovieModal(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-fadeIn"
+          onClick={() => setShowMediaModal(false)}
         >
           <div
-            className="relative w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+            className="relative w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Film size={20} className="text-amber-500" />
-                <h3 className="text-lg font-bold text-white font-['Space_Grotesk']">Add New Title to MovieLot</h3>
+            {/* Modal Header */}
+            <div className="p-5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/60">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <Clapperboard size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-white font-['Space_Grotesk']">
+                    {editingMediaId ? `Edit Title: ${mediaForm.title}` : 'Upload Title to Catalog'}
+                  </h3>
+                  <p className="text-[11px] text-zinc-400">
+                    Upload full metadata for Movies, Anime, TV Series, or Documentaries.
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
-                onClick={() => setShowAddMovieModal(false)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800"
+                onClick={() => setShowMediaModal(false)}
+                className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition-colors"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleAddMovieSubmit} className="p-5 overflow-y-auto space-y-4 flex-1">
-              <div className="grid grid-cols-2 gap-3">
+            {/* Modal Form */}
+            <form onSubmit={handleMediaSubmit} className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
+              {/* Media Type & Rating */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1">Media Type</label>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    Media Category <span className="text-amber-400">*</span>
+                  </label>
                   <select
-                    value={movieForm.mediaType}
-                    onChange={(e) => setMovieForm({ ...movieForm, mediaType: e.target.value as 'movie' | 'tv' })}
-                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
+                    id="select-media-type"
+                    value={mediaForm.mediaType}
+                    onChange={(e) => setMediaForm({ ...mediaForm, mediaType: e.target.value as MediaType })}
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs font-medium outline-none focus:border-amber-500 cursor-pointer"
                   >
-                    <option value="movie">Movie</option>
+                    <option value="anime">Anime (Series / Film)</option>
+                    <option value="movie">Feature Film</option>
                     <option value="tv">TV Series</option>
+                    <option value="documentary">Documentary</option>
+                    <option value="animation">Western Animation</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1">Rating (1-10)</label>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    Rating (1-10) <span className="text-amber-400">*</span>
+                  </label>
                   <input
+                    id="input-media-rating"
                     type="number"
                     step="0.1"
                     min="1"
                     max="10"
                     required
-                    value={movieForm.voteAverage}
-                    onChange={(e) => setMovieForm({ ...movieForm, voteAverage: parseFloat(e.target.value) || 8.0 })}
+                    value={mediaForm.voteAverage}
+                    onChange={(e) => setMediaForm({ ...mediaForm, voteAverage: parseFloat(e.target.value) || 8.0 })}
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    Release Date <span className="text-amber-400">*</span>
+                  </label>
+                  <input
+                    id="input-media-release-date"
+                    type="date"
+                    required
+                    value={mediaForm.releaseDate}
+                    onChange={(e) => setMediaForm({ ...mediaForm, releaseDate: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">Title</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Interstellar Odyssey"
-                  value={movieForm.title}
-                  onChange={(e) => setMovieForm({ ...movieForm, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
-                />
+              {/* Title & Native/Original Title */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    English / Main Title <span className="text-amber-400">*</span>
+                  </label>
+                  <input
+                    id="input-media-title"
+                    type="text"
+                    required
+                    placeholder="e.g. Attack on Titan / Dune: Part Two"
+                    value={mediaForm.title}
+                    onChange={(e) => setMediaForm({ ...mediaForm, title: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    Original / Native Title (Kanji/Romaji)
+                  </label>
+                  <input
+                    id="input-media-original-title"
+                    type="text"
+                    placeholder="e.g. 進撃の巨人 / Kimetsu no Yaiba"
+                    value={mediaForm.originalTitle || ''}
+                    onChange={(e) => setMediaForm({ ...mediaForm, originalTitle: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
+                  />
+                </div>
               </div>
 
+              {/* Overview */}
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">Overview / Synopsis</label>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                  Synopsis / Storyline Overview <span className="text-amber-400">*</span>
+                </label>
                 <textarea
+                  id="input-media-overview"
                   rows={3}
                   required
-                  placeholder="Compelling plot synopsis..."
-                  value={movieForm.overview}
-                  onChange={(e) => setMovieForm({ ...movieForm, overview: e.target.value })}
+                  placeholder="Provide an engaging synopsis describing the plot, characters, and narrative tension..."
+                  value={mediaForm.overview}
+                  onChange={(e) => setMediaForm({ ...mediaForm, overview: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500 resize-none"
                 />
               </div>
 
+              {/* Poster and Backdrop URLs */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    Poster Image URL <span className="text-amber-400">*</span>
+                  </label>
+                  <input
+                    id="input-media-poster"
+                    type="url"
+                    required
+                    placeholder="https://images.unsplash.com/..."
+                    value={mediaForm.posterPath}
+                    onChange={(e) => setMediaForm({ ...mediaForm, posterPath: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    Backdrop / Hero Banner URL
+                  </label>
+                  <input
+                    id="input-media-backdrop"
+                    type="url"
+                    placeholder="https://images.unsplash.com/..."
+                    value={mediaForm.backdropPath || ''}
+                    onChange={(e) => setMediaForm({ ...mediaForm, backdropPath: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              {/* Studio, Director & Episode Specs */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    Studio / Production
+                  </label>
+                  <input
+                    id="input-media-studio"
+                    type="text"
+                    placeholder="e.g. MAPPA, Ufotable, A24"
+                    value={mediaForm.studio || ''}
+                    onChange={(e) => setMediaForm({ ...mediaForm, studio: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    Director / Creator
+                  </label>
+                  <input
+                    id="input-media-director"
+                    type="text"
+                    placeholder="e.g. Hayao Miyazaki"
+                    value={mediaForm.director || ''}
+                    onChange={(e) => setMediaForm({ ...mediaForm, director: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    Seasons (if series)
+                  </label>
+                  <input
+                    id="input-media-seasons"
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 4"
+                    value={mediaForm.seasonsCount || ''}
+                    onChange={(e) => setMediaForm({ ...mediaForm, seasonsCount: parseInt(e.target.value) || undefined })}
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    Runtime / Episodes
+                  </label>
+                  <input
+                    id="input-media-runtime"
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 24 or 120"
+                    value={mediaForm.runtime || ''}
+                    onChange={(e) => setMediaForm({ ...mediaForm, runtime: parseInt(e.target.value) || 24 })}
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              {/* Cast Members */}
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">Poster Image URL</label>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                  Cast / Voice Actors (Comma separated)
+                </label>
                 <input
-                  type="url"
-                  required
-                  placeholder="https://..."
-                  value={movieForm.posterPath}
-                  onChange={(e) => setMovieForm({ ...movieForm, posterPath: e.target.value })}
+                  id="input-media-cast"
+                  type="text"
+                  placeholder="Yuki Kaji, Yui Ishikawa, Hiroshi Kamiya"
+                  value={castInput}
+                  onChange={(e) => setCastInput(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              {/* Genres Multi-Select Pills */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                  Genres (Click to toggle)
+                </label>
+                <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-2 bg-zinc-900 rounded-xl border border-zinc-800">
+                  {ALL_GENRE_OPTIONS.map((g) => {
+                    const active = mediaForm.genres.includes(g);
+                    return (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => handleToggleGenre(g)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                          active
+                            ? 'bg-amber-500 text-black shadow-sm'
+                            : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {g}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Trailer ID and Streaming Link */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1">Release Date</label>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    YouTube Trailer (Video ID or Full URL)
+                  </label>
                   <input
-                    type="date"
-                    required
-                    value={movieForm.releaseDate}
-                    onChange={(e) => setMovieForm({ ...movieForm, releaseDate: e.target.value })}
+                    id="input-media-trailer"
+                    type="text"
+                    placeholder="e.g. M_OauHnAFc8 or https://youtu.be/..."
+                    value={mediaForm.trailerKey || ''}
+                    onChange={(e) => setMediaForm({ ...mediaForm, trailerKey: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1">YouTube Trailer ID</label>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                    Stream / Official Platform URL (Optional)
+                  </label>
                   <input
-                    type="text"
-                    placeholder="e.g. d9MyW72ELq0"
-                    value={movieForm.trailerKey}
-                    onChange={(e) => setMovieForm({ ...movieForm, trailerKey: e.target.value })}
+                    id="input-media-stream"
+                    type="url"
+                    placeholder="https://..."
+                    value={mediaForm.streamUrl || ''}
+                    onChange={(e) => setMediaForm({ ...mediaForm, streamUrl: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white text-xs outline-none focus:border-amber-500"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-zinc-800 flex justify-end gap-2">
+              {/* Modal Footer Buttons */}
+              <div className="pt-4 border-t border-zinc-800 flex items-center justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setShowAddMovieModal(false)}
-                  className="py-2 px-4 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-medium cursor-pointer"
+                  onClick={() => setShowMediaModal(false)}
+                  className="py-2.5 px-4 rounded-xl border border-zinc-800 bg-zinc-900 hover:bg-zinc-850 text-zinc-300 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
+                  id="btn-submit-media-upload"
                   disabled={formSubmitting}
-                  className="py-2 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-colors cursor-pointer disabled:opacity-60"
+                  className="py-2.5 px-6 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-all shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-60 flex items-center gap-1.5"
                 >
-                  {formSubmitting ? 'Adding Title...' : 'Add to Catalog'}
+                  {formSubmitting ? (
+                    <>
+                      <RefreshCw size={13} className="animate-spin" />
+                      <span>Saving Title...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle size={14} />
+                      <span>{editingMediaId ? 'Save Changes' : 'Publish to Catalog'}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

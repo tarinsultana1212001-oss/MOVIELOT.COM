@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { User, AdminStats } from '../../src/types';
+import { CURATED_MOVIES, CURATED_TV_SHOWS, CURATED_ANIME } from '../data/curatedMovies';
+import { customMediaCatalog } from './movieService';
 
 export interface StoredUser {
   id: string;
@@ -293,10 +295,17 @@ export class AuthService {
   }
 
   static getStats(): AdminStats {
+    const customCount = customMediaCatalog.length;
+    const animeCount = CURATED_ANIME.length + customMediaCatalog.filter(m => m.mediaType === 'anime').length;
+    const movieCount = CURATED_MOVIES.length + customMediaCatalog.filter(m => m.mediaType === 'movie').length;
+    const tvCount = CURATED_TV_SHOWS.length + customMediaCatalog.filter(m => m.mediaType === 'tv').length;
+
     return {
       totalUsers: users.length,
-      totalMovies: 12, // Curated movies base count
-      totalTVShows: 6, // Curated TV series count
+      totalMovies: movieCount,
+      totalTVShows: tvCount,
+      totalAnime: animeCount,
+      totalCustomTitles: customCount,
       activeSessions: sessions.size,
       serverUptimeSeconds: Math.floor((Date.now() - serverStartTime) / 1000),
       adminEmail: 'Protected Root Administrator',

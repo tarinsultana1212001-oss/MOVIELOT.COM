@@ -8,6 +8,7 @@ import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
 import { MoviesPage } from './pages/MoviesPage';
 import { TVShowsPage } from './pages/TVShowsPage';
+import { AnimePage } from './pages/AnimePage';
 import { TrendingPage } from './pages/TrendingPage';
 import { PopularPage } from './pages/PopularPage';
 import { GenresPage } from './pages/GenresPage';
@@ -84,7 +85,7 @@ function AppContent() {
           genreId: parseInt(parts[1]),
           genreName: decodeURIComponent(parts[2] || 'Genre')
         });
-      } else if (['movies', 'tv', 'trending', 'popular', 'genres', 'search', 'favorites', 'legal', 'admin'].includes(root)) {
+      } else if (['movies', 'tv', 'anime', 'trending', 'popular', 'genres', 'search', 'favorites', 'legal', 'admin'].includes(root)) {
         setCurrentView(root);
         setViewParams({});
       } else {
@@ -166,6 +167,13 @@ function AppContent() {
 
         {currentView === 'tv' && (
           <TVShowsPage
+            onSelectMovie={handleSelectMedia}
+            onPlayTrailer={handlePlayTrailer}
+          />
+        )}
+
+        {currentView === 'anime' && (
+          <AnimePage
             onSelectMovie={handleSelectMedia}
             onPlayTrailer={handlePlayTrailer}
           />

@@ -1,4 +1,4 @@
-export type MediaType = 'movie' | 'tv';
+export type MediaType = 'movie' | 'tv' | 'anime' | 'documentary' | 'animation';
 
 export interface Genre {
   id: number;
@@ -76,6 +76,8 @@ export interface MediaItem {
   episodesCount?: number;
   status?: string;
   director?: string;
+  studio?: string;
+  streamUrl?: string;
   creators?: string[];
   cast?: CastMember[];
   crew?: CrewMember[];
@@ -140,7 +142,7 @@ export interface AIChatMessage {
 
 export interface SearchFilterState {
   query: string;
-  mediaType: 'all' | 'movie' | 'tv';
+  mediaType: 'all' | 'movie' | 'tv' | 'anime' | 'documentary' | 'animation';
   genreId?: number | 'all';
   year?: string | 'all';
   minRating?: number;
@@ -166,6 +168,8 @@ export interface AdminStats {
   totalUsers: number;
   totalMovies: number;
   totalTVShows: number;
+  totalAnime?: number;
+  totalCustomTitles?: number;
   activeSessions: number;
   serverUptimeSeconds: number;
   adminEmail: string;
@@ -174,12 +178,26 @@ export interface AdminStats {
 
 export interface CustomMediaPayload {
   title: string;
+  originalTitle?: string;
+  tagline?: string;
   mediaType: MediaType;
   overview: string;
   posterPath: string;
   backdropPath?: string;
   releaseDate: string;
   voteAverage: number;
+  voteCount?: number;
   genres: string[];
   trailerKey?: string;
+  streamUrl?: string;
+  director?: string;
+  studio?: string;
+  creators?: string[];
+  castNames?: string[];
+  seasonsCount?: number;
+  episodesCount?: number;
+  runtime?: number;
+  language?: string;
+  country?: string;
+  status?: string;
 }
