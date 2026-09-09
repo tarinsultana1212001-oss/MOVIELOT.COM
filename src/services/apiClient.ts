@@ -20,7 +20,7 @@ export interface PaginatedResponse<T> {
   totalResults: number;
 }
 
-const API_BASE = '/api';
+const API_BASE = 'https://movielot-com.onrender.com/api';
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, options);
